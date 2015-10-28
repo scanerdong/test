@@ -1,0 +1,168 @@
+################################################################################
+# CopyRight NTS Technology (ChengDu) Co., Ltd
+################################################################################
+# 文件名称：makefile
+# 功    能: 提供om_wdg和om的编译配置，包括包含文件、输出文件及中间文
+#           件；编译警告条件为Wall
+# 版    本: v0.2
+# 编写作者:	vic
+# 编写日期:	20010/09/06
+# 说    明:	交叉编译环境为powerpc-e300c3-linux-gcc，如果需要在虚拟机上试运行，请
+#           将CC = $(PPCGCCBINPATH)/powerpc-e300c3-linux-gcc改为GCC = gcc
+# 修改历史:	
+# 修改日期    修改人  修改描述
+################################################################################
+
+#//////////////////////////////////////////////////////////////////////
+#
+#配置当前编译出的软件版本号。该版本号为4位BCD码，其格式和每位含义如下：
+#               0           0             0          0
+#          硬件版本号 软件大版本号 软件小版本号 软件调试版本号
+#软件升级时:
+#OM_WDG需要修改HW_VER_NO, SW_DEF_VER_NO和FW_DEF_VER_NO
+#OM需要修改HW_VER_NO, SW_VER_NO和SW_MINI_VER_NO
+#//////////////////////////////////////////////////////////////////////
+#硬件版本号
+HW_VER_NO=1
+
+#软件版本号
+SW_VER_NO=1
+SW_MINI_VER_NO=03
+
+#FPGA版本号
+FW_VER_NO=1
+
+#软件缺省版本号
+#(表示没有start.config文件时的缺省启动版本)
+SW_DEF_VER_NO=1
+
+#FPGA缺省版本号
+#(表示没有start.config文件时的缺省启动版本)
+FW_DEF_VER_NO=1
+
+#软件版本号全名
+OM_SW_VER_NO=0x$(HW_VER_NO)$(SW_VER_NO)$(SW_MINI_VER_NO)
+
+#FPGA模拟读取版本号全名
+OM_FW_VER_NO=0x$(HW_VER_NO)$(FW_VER_NO)00
+
+#///////////////////////////////////////////////////////////////////////
+#
+# 输出结果文件的名称定义
+#
+#///////////////////////////////////////////////////////////////////////
+ITEMNAME = om
+VERSION = $(HW_VER_NO)$(SW_VER_NO)
+#WDGMODULENAME = $(ITEMNAME)_wdg
+OMMODULENAME = $(ITEMNAME)_$(VERSION)
+
+#///////////////////////////////////////////////////////////////////////
+#
+# 源文件根路径、中间文件路径、结果文件路径定义
+#
+#///////////////////////////////////////////////////////////////////////
+MAKEFILEPATH = .
+HOMEDIR = $(MAKEFILEPATH)
+OBJPATH	= $(HOMEDIR)/obj
+OUTPATH	= $(HOMEDIR)/out
+SRCPATH = $(HOMEDIR)/src
+INCLUDE = $(HOMEDIR)/include
+INCLUDE += -I/opt/arm/4.5.2/lib/SQLite/include
+#DDINCLUDE = $(HOMEDIR)/dd_include
+#DSPINCLUDE = $(HOMEDIR)/dsp_include
+#DSPSRC = $(HOMEDIR)/dsp_src
+
+#///////////////////////////////////////////////////////////////////////
+#
+# 编译器路径及其命令名称定义
+#
+#///////////////////////////////////////////////////////////////////////
+#PPCGCCPATH = /opt/arm/nxp_toolchain
+#PPCGCCBINPATH	=	$(PPCGCCPATH)/bin
+CC = /opt/arm/4.5.2/bin/arm-none-linux-gnueabi-g++
+ECHO = /usr/bin/echo
+#OBJCOPY = $(PPCGCCBINPATH)/arm-vfp-linux-gnu-objcopy
+#GCC_PATH = /opt/arm/nxp_toolchain/bin
+#CC = $(GCC_PATH)/arm-vfp-linux-gnu-g++
+#///////////////////////////////////////////////////////////////////////
+#
+# 编译选项定义
+#
+#///////////////////////////////////////////////////////////////////////
+CFLAGS  = -g3
+CFLAGS += -Wall
+#CFLAGS += -O2
+CFLAGS += -D _GNU_SOURCE
+CFLAGS += -DHW_VER_NO=$(HW_VER_NO)
+CFLAGS += -DSW_DEF_VER_NO=$(SW_DEF_VER_NO)
+CFLAGS += -DFW_DEF_VER_NO=$(FW_DEF_VER_NO)
+CFLAGS += -DOM_SW_VER_NO=$(OM_SW_VER_NO)
+CFLAGS += -DOM_FW_VER_NO=$(OM_FW_VER_NO)
+
+#///////////////////////////////////////////////////////////////////////
+#
+# 链接选项定义 -s是删除所有的调试信息
+#
+#///////////////////////////////////////////////////////////////////////
+LDFLAGS  = -static
+LDFLAGS += -s
+LDFLAGS += -Wall,-O2
+LIBS = -lsqlite3 -L/opt/arm/4.5.2/lib/SQLite/lib -lpthread -lm
+
+#///////////////////////////////////////////////////////////////////////
+#
+# 头文件包含路径定义
+#
+#///////////////////////////////////////////////////////////////////////
+INCFLAGS  = -I$(INCLUDE)
+#INCFLAGS += -I$(DDINCLUDE)
+#INCFLAGS += -I$(DSPINCLUDE)
+
+#///////////////////////////////////////////////////////////////////////
+#
+# OBJ文件列表定义
+# 因为全局对象构建之前需要先初始化全局单例对象链表，因此object.o必须放在最后
+#
+#///////////////////////////////////////////////////////////////////////
+OMOBJS := $(patsubst $(SRCPATH)/%.cpp, $(OBJPATH)/%.o, $(wildcard $(SRCPATH)/*.cpp))
+			
+#///////////////////////////////////////////////////////////////////////
+#
+# 链接命令定义
+#
+#///////////////////////////////////////////////////////////////////////
+all : $(OMMODULENAME)
+
+$(OMMODULENAME) : $(OMOBJS) 
+	$(CC) -o $(OUTPATH)/$@ $^ $(LIBS) $(LDFLAGS)
+	@echo $(OM_SW_VER_NO)
+	@echo $(OM_FW_VER_NO)
+#	@echo $(OM_SW_VER_NO) > ver.ini
+#	$(OBJCOPY) --add-section .om_ver=ver.ini $(OUTPATH)/$(OMMODULENAME)
+#	@rm -rf ver.ini
+
+clean :
+	rm $(OBJPATH)/*.o
+	rm $(OBJPATH)/*.d
+
+#///////////////////////////////////////////////////////////////////////
+#
+# 编译命令定义
+#
+#///////////////////////////////////////////////////////////////////////
+$(OBJPATH)/%.o : $(SRCPATH)/%.cpp
+	$(CC) -c -o $@ $< $(INCFLAGS) $(CFLAGS)
+	
+#///////////////////////////////////////////////////////////////////////
+#
+# 和添加头文件依赖相关的编译命令
+# 
+#///////////////////////////////////////////////////////////////////////
+$(OBJPATH)/%.d : $(SRCPATH)/%.cpp
+	@rm -rf $@
+	@echo "Generate: "$@
+	@${CC} -MM $< $(INCFLAGS) > $@.$$
+	@sed 's,$(basename $(notdir $<)).o:,$(OBJPATH)/$(basename $(notdir $<)).o $@:,g' < $@.$$ > $@
+	@rm -rf $@.$$
+		
+include ${OMOBJS:.o=.d}

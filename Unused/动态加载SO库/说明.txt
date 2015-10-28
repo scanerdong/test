@@ -1,0 +1,10 @@
+动态加载SO库只需要几个接口（dlopen,dlsym,dlclose）就可以了，而且无需在makefile中加-llibname来链接
+
+编译共享库的方法
+g++ -g -c -fPIC -I./ -o test.o test.cpp
+g++ -shared -fPIC -o libtest.so test.o
+使用dlsym调用库的接口去创建这样对象，然后赋给外部程序的虚类指针，这样外部程序通过一个基类指针就可以使用在库在创建的这个对象了。
+
+注意
+1.创建对象的类要带虚函数（这样才有虚表），在外程序中创建接口一致的虚类（接口可全定义成纯虚函数），而在库中实现这个类
+2.用C++写的库要加extern "C"（让函数名被编译成C格式的）不然dlsym找不到符号

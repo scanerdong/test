@@ -1,0 +1,5 @@
+#comment
+*.o
+*.d
+om/obj
+

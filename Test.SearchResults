@@ -1,0 +1,7 @@
+---- sprint Æ¥Åä (6 ÔÚ 3 ÎÄ¼þ ) ----
+Common.cpp (om\src):    sprintf(achBuf, "%04d-%02d-%02d %02d:%02d:%02d", stTime.u32Year, stTime.u32Mon,
+FdResMgr.h (om\include):            sprintf(achBuf, "Des: created at %s %d", __FILE__, __LINE__); \
+FdResMgr.h (om\include):            sprintf(achBuf, "Des: open at %s %d", __FILE__, __LINE__);  \
+FdResMgr.h (om\include):            sprintf(achBuf, "Filename: %s, Des: fopen at %s %d", fileName, __FILE__, __LINE__); \
+Om.h (om\include):inline void SPRINT_BUF(char* pchPrintBuf, void* const pBuf, uint32 u32Len)
+Om.h (om\include):	   sprintf(pchTemp, "0x%02x,", (uint8)pi8BufTemp[u32I]);

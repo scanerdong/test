@@ -1,0 +1,26 @@
+原代码：
+$(OBJPATH)/%.d : $(SRCPATH)/%.cpp
+	@rm -rf $@
+	@echo "Generate: "$@
+	@${CC} -MM $< $(INCFLAGS) > $@.$$
+	@sed 's,$(basename $(notdir $<)).o:,$(OBJPATH)/$(basename $(notdir $<)).o $@:,g' < $@.$$ > $@
+	@rm -rf $@.$$
+		
+include ${OMOBJS:.o=.d}
+
+解释：
+
+//先移除所有的目标
+@rm -rf $@
+
+//输出   Generate: "目标” 这句话@echo "Generate: "$@
+
+//从目标.cpp文件中找出依赖的.h文件（不包含‘<>’所产生的）,将依赖关系输出到“目标名.5327”中@${CC} -MM $< $(INCFLAGS) > $@.$$
+
+//执行sed  s表示替换操作， ','为分隔符  $(basename $(notdir $<)).o: 得到依赖的名字，不包含目录和后缀  
+//作用是从“目标名.5327”中，将该句替换，多加一个$@为目标@sed 's,$(basename $(notdir $<)).o:,$(OBJPATH)/$(basename $(notdir $<)).o $@:,g' < $@.$$ > $@
+
+//移除临时文件@rm -rf $@.$$
+
+//将.o文件替换为.d后缀，包含进来。
+include ${OMOBJS:.o=.d}

@@ -1,0 +1,20 @@
+编译时要把tcp.h头里加进去一个宏定义
+vim /usr/include/netinet/tcp.h
+
+#ifndef __FAVOR_BSD
+#define __FAVOR_BSD
+#endif
+
+
+返回1不需重组(设置了DF 或者 普通IP包：ip_off、MF 为 0)，
+    3已加入重组列表中缓存（其它分片包：ip_off ≥ 0、MF 为 1）
+    2重组完成，完整包输出（最后一个分片包： ip_off ＞ 0、MF 为 0）
+    负值，出错
+    
+//in传入一个完整的ip包，返回out需要自已释放内存，重组时额外信息
+struct ip_extra_info
+{
+	frag_packets_sum; //重组该包所用的分片数
+	frag_size_sum;    //重组该包所用的分片大小之和（包括各分片的IP头长度）
+}
+int ip_defrag_stub(struct ip* in, struct ip** out, struct ip_extra_info* extra_out)
