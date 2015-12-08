@@ -1,0 +1,25 @@
+poll.cpp
+1.讲述了poll和ppoll的用法
+2.证明如果不阻塞信号，poll是会被信号给打断的
+3.证明服务端套接口在调用listen后就可以被poll，然后再调用accept就不会被阻塞住
+4.real-time信号（在SIGRTMIN~SIGRTMAX之间）可以被多次加入pending队列中。然后在该信号的阻塞被解除时，可以依次发给信号处理函数
+5.标准信号，如SIGALRM只会在pending中保留一个。在该信号被解除阻塞时，只调用一次信号处理函数
+
+如：在阻塞时发送kill -s 40 [pid]多次给进程，
+可以看到解除阻塞后收到多个40信号，但只有一个alarm信号
+receive NO.40 signal
+receive NO.40 signal
+receive NO.40 signal
+receive alarm signal
+
+
+epoll_level.cpp
+1.讲述epoll水平触发应用于阻塞型套接口的编程方法，只需要套接口有数据就可以产生事件。
+2.水平触发可用于阻塞和非阻塞型套接口
+
+epoll_edge.cpp
+1.讲述epoll边沿触发应用于非阻塞型套接口用法。
+2.epoll边沿触发只适用于非阻塞型套接口，因为：比如在2K数据来临时，调用epoll_wait()产生一次EPOLL_IN，然后recv只收了1K，
+那么另1K数据即使没接收，下一次也不会产生EPOLL_IN了！！！！！！！！！！
+3.基于2点，所以每产生一次EPOLL_IN事件，都得把缓冲区里的数据读完，即，如果为数据报套接口，必须读取到EAGIN为止，
+如果为流式套接口，可以读取到EAGAIN 或 读取的数据量小于传入的buf大小 为止。

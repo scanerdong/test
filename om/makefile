@@ -108,7 +108,7 @@ CFLAGS += -DOM_FW_VER_NO=$(OM_FW_VER_NO)
 #LDFLAGS += -s
 LDFLAGS += -Wall,-O2
 LIB_BOOST_SUFFIX=-mt
-LIBS = -lzmq 
+LIBS = -lzmq -L/usr/lib64/mysql -lmysqlclient
 
 #///////////////////////////////////////////////////////////////////////
 #
