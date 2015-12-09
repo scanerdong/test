@@ -8,4 +8,4 @@ make
 2.run
 ./out/om_11
 
-OK is quick & simple
+create new branch is quick and simple
