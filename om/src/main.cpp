@@ -256,17 +256,91 @@ void merge_sort2(int *list, int length)
 }
 
 
+int Func(int* A, int nSize)
+{
+	int first_0_pos = nSize;
+	int i,j,tmp;
+	int done;
+	
+	if(nSize<1) return -1;
+	
+	while(first_0_pos>0 && A[first_0_pos-1]==0) //从后向前移到第一个非0位置
+	{
+		first_0_pos--; 
+	}
+	
+	if(first_0_pos == 0) return 0;
+	
+	for(i=0; i<first_0_pos; i++){
+		if(A[i]==0)
+		{
+			A[i] = A[first_0_pos-1];
+			A[first_0_pos-1] = 0;
+			first_0_pos--;
+		}
+	}
+	
+	//对[0,first_0_pos)之间冒泡排序
+	for(i=0;i<first_0_pos;i++)
+	{
+		done = 1;
+		for(j=0;j<first_0_pos-i-1;j++)
+		{
+			if(A[j]>A[j+1]){
+				tmp = A[j];
+				A[j] = A[j+1];
+				A[j+1] = tmp;
+				done = 0;
+			}
+		}
+		
+		if(done == 1) break;
+	}
+	
+	return first_0_pos;
+}
+
+
+
+void f()
+{
+    int n5;
+    int times = 0;
+    int sum;
+    for(n5=0; n5<=20; n5++)
+    {
+        sum = n5*5;
+
+        //最多可用的2块数
+        times += sum/2;//最多可以有多少次2块
+        times++; //全为1块
+    }
+    
+    printf("%d\n", times);
+
+    times = 0;
+    int x,y,z;
+    for (x=0; x<=100; x++) 
+        for (y=0; y<=50; y++) 
+            for (z=0; z<=20; z++) 
+                if ((x+2*y+5*z)==100) times++;
+    
+    printf("%d\n", times);
+}
 
 int main(void)
 {
-    int a[30] = { 5, 2, 4, 7, 1, 3, 2, 6, 8, 12, 9, 71,88 ,99, 64, 94, 44, 33, 22, 77, 88};
-    merge_sort2(a, 30);
+    int a[30] = { 0, 0, 0, 5, 2, 4, 7, 1, 0, 0, 3, 2, 6, 0, 8, 12, 9, 71,88 , 0, 99, 94, 44, 33, 22, 77, 88, 0, 0, 0};
+    //merge_sort2(a, 30);
     //std::sort(a,a+30);
+    int ret  = Func(a,30);
     for(int i = 0; i<30; i++){
         printf("%d ", a[i]);
     }
 
-    printf("\n");
+    printf("ret=%d\n", ret);
+
+    f();
     
     return 0;
 }

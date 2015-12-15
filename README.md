@@ -8,4 +8,4 @@ make
 2.run
 ./out/om_11
 
-create new branch is quick and simple
+create new branch is quick and simple add in dev branch
