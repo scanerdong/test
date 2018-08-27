@@ -64,9 +64,13 @@ OMMODULENAME = $(ITEMNAME)_$(VERSION)
 MAKEFILEPATH = .
 HOMEDIR = $(MAKEFILEPATH)
 OBJPATH	= $(HOMEDIR)/obj
+LIBPATH	= $(HOMEDIR)/lib
 OUTPATH	= $(HOMEDIR)/out
 SRCPATH = $(HOMEDIR)/src
 INCLUDE = $(HOMEDIR)/include
+DPDKINCLUDE = $(HOMEDIR)/dpdk/include
+DPDKLIBPATH = $(HOMEDIR)/dpdk/lib
+
 #INCLUDE += -I/usr/sqlite-x86/database/3.8.3.1/include
 #DDINCLUDE = $(HOMEDIR)/dd_include
 #DSPINCLUDE = $(HOMEDIR)/dsp_include
@@ -79,7 +83,7 @@ INCLUDE = $(HOMEDIR)/include
 #///////////////////////////////////////////////////////////////////////
 #PPCGCCPATH = /opt/arm/nxp_toolchain
 #PPCGCCBINPATH	=	$(PPCGCCPATH)/bin
-CC = g++
+CC = g++  -std=c++11
 ECHO = /usr/bin/echo
 #OBJCOPY = $(PPCGCCBINPATH)/arm-vfp-linux-gnu-objcopy
 #GCC_PATH = /opt/arm/nxp_toolchain/bin
@@ -91,8 +95,9 @@ ECHO = /usr/bin/echo
 #///////////////////////////////////////////////////////////////////////
 CFLAGS  = -g3
 CFLAGS += -Wall -Wshadow
-#CFLAGS += -O2
+#CFLAGS += -O3
 CFLAGS += -D _GNU_SOURCE -D_BSD_SOURCE -D__FAVOR_BSD
+CFLAGS +=  -pthread  -march=corei7  -DRTE_MACHINE_CPUFLAG_SSE -DRTE_MACHINE_CPUFLAG_SSE2 -DRTE_MACHINE_CPUFLAG_SSE3 -DRTE_MACHINE_CPUFLAG_SSSE3 -DRTE_MACHINE_CPUFLAG_SSE4_1 -DRTE_MACHINE_CPUFLAG_SSE4_2
 CFLAGS += -DHW_VER_NO=$(HW_VER_NO)
 CFLAGS += -DSW_DEF_VER_NO=$(SW_DEF_VER_NO)
 CFLAGS += -DFW_DEF_VER_NO=$(FW_DEF_VER_NO)
@@ -106,16 +111,17 @@ CFLAGS += -DOM_FW_VER_NO=$(OM_FW_VER_NO)
 #///////////////////////////////////////////////////////////////////////
 #LDFLAGS  = -static
 #LDFLAGS += -s
-LDFLAGS += -Wall,-O2
-LIB_BOOST_SUFFIX=-mt
-LIBS = -lzmq -L/usr/lib64/mysql -lmysqlclient
+#-Wl,-lrte_pdump -Wl,-lrte_ip_frag -Wl,-lrte_gro -Wl,-lrte_meter -Wl,-lrte_sched -Wl,-lrte_jobstats -Wl,-lrte_metrics -Wl,-lrte_bitratestats -Wl,-lrte_latencystats -Wl,-lrte_efd -Wl,--whole-archive -Wl,-lrte_hash -Wl,-lrte_vhost -Wl,-lrte_kvargs -Wl,-lrte_mbuf -Wl,-lrte_net -Wl,-lrte_ethdev -Wl,-lrte_cryptodev -Wl,-lrte_eventdev -Wl,-lrte_mempool -Wl,-lrte_mempool_ring -Wl,-lrte_ring -Wl,-lrte_eal -Wl,-lrte_cmdline -Wl,-lrte_reorder -Wl,-lrte_kni -Wl,-lrte_mempool_stack -Wl,-lrte_pmd_af_packet -Wl,-lrte_pmd_ark -Wl,-lrte_pmd_avp -Wl,-lrte_pmd_bnxt -Wl,-lrte_pmd_bond -Wl,-lrte_pmd_cxgbe -Wl,-lrte_pmd_e1000 -Wl,-lrte_pmd_ena -Wl,-lrte_pmd_enic -Wl,-lrte_pmd_fm10k -Wl,-lrte_pmd_failsafe -Wl,-lrte_pmd_i40e -Wl,-lrte_pmd_ixgbe -Wl,-lrte_pmd_kni -Wl,-lrte_pmd_lio -Wl,-lrte_pmd_nfp -Wl,-lrte_pmd_null -Wl,-lrte_pmd_qede -Wl,-lrte_pmd_ring -Wl,-lrte_pmd_sfc_efx -Wl,-lrte_pmd_thunderx_nicvf -Wl,-lrte_pmd_virtio -Wl,-lrte_pmd_vhost -Wl,-lrte_pmd_vmxnet3_uio -Wl,-lrte_pmd_aesni_mb -Wl,-lrte_pmd_null_crypto -Wl,-lrte_pmd_qat -Wl,-lcrypto -Wl,-lrte_pmd_crypto_scheduler -Wl,-lrte_pmd_skeleton_event -Wl,-lrte_pmd_sw_event -Wl,-lrte_pmd_octeontx_ssovf -Wl,--no-whole-archive -Wl,-lrt -Wl,-lm -Wl,-lnuma -Wl,-ldl
+DPDK_LIBS_LD_FLAG = -pthread  -march=corei7  -DRTE_MACHINE_CPUFLAG_SSE -DRTE_MACHINE_CPUFLAG_SSE2 -DRTE_MACHINE_CPUFLAG_SSE3 -DRTE_MACHINE_CPUFLAG_SSSE3 -DRTE_MACHINE_CPUFLAG_SSE4_1 -DRTE_MACHINE_CPUFLAG_SSE4_2 -L$(DPDKLIBPATH) -Wl,-lrte_pipeline -Wl,-lrte_table -Wl,-lrte_port -Wl,-lrte_pdump -Wl,-lrte_distributor -Wl,-lrte_ip_frag -Wl,-lrte_meter -Wl,-lrte_sched -Wl,-lrte_lpm -Wl,--whole-archive -Wl,-lrte_acl -Wl,--no-whole-archive -Wl,-lrte_jobstats -Wl,-lrte_metrics -Wl,-lrte_bitratestats -Wl,-lrte_latencystats -Wl,-lrte_power -Wl,-lrte_timer -Wl,-lrte_efd -Wl,-lrte_cfgfile -Wl,--whole-archive -Wl,-lrte_hash -Wl,-lrte_vhost -Wl,-lrte_kvargs -Wl,-lrte_mbuf -Wl,-lrte_net -Wl,-lrte_ethdev -Wl,-lrte_cryptodev -Wl,-lrte_eventdev -Wl,-lrte_mempool -Wl,-lrte_mempool_ring -Wl,-lrte_ring -Wl,-lrte_eal -Wl,-lrte_cmdline -Wl,-lrte_reorder -Wl,-lrte_kni -Wl,-lrte_mempool_stack -Wl,-lrte_pmd_af_packet -Wl,-lrte_pmd_ark -Wl,-lrte_pmd_avp -Wl,-lrte_pmd_bnxt -Wl,-lrte_pmd_bond -Wl,-lrte_pmd_cxgbe -Wl,-lrte_pmd_e1000 -Wl,-lrte_pmd_ena -Wl,-lrte_pmd_enic -Wl,-lrte_pmd_fm10k -Wl,-lrte_pmd_i40e -Wl,-lrte_pmd_ixgbe -Wl,-lrte_pmd_kni -Wl,-lrte_pmd_lio -Wl,-lrte_pmd_nfp -Wl,-lrte_pmd_null -Wl,-lrte_pmd_qede -Wl,-lrte_pmd_ring -Wl,-lrte_pmd_sfc_efx -Wl,-lrte_pmd_tap -Wl,-lrte_pmd_virtio -Wl,-lrte_pmd_vhost -Wl,-lrte_pmd_vmxnet3_uio -Wl,-lrte_pmd_null_crypto -Wl,-lrte_pmd_crypto_scheduler -Wl,-lrte_pmd_skeleton_event -Wl,-lrte_pmd_sw_event -Wl,-lrte_pmd_octeontx_ssovf -Wl,--no-whole-archive -Wl,-lrt -Wl,-lm -Wl,-lnuma -Wl,-ldl
+LDFLAGS += -Wall $(DPDK_LIBS_LD_FLAG)
+LIBS = -lpthread 
 
 #///////////////////////////////////////////////////////////////////////
 #
 # 头文件包含路径定义
 #
 #///////////////////////////////////////////////////////////////////////
-INCFLAGS  = -I$(INCLUDE) -D_BSD_SOURCE -DLIBNET_VER=1 -DHAVE_ICMPHDR=1 -DHAVE_TCP_STATES=1 -DHAVE_BSD_UDPHDR=1 -I. -I/usr/local/libnids-1.24/libpcap1.1.1 -I/usr/local/libnids-1.24/libpcap1.1.1/bpf -I/usr/local/include -D_BSD_SOURCE -D__BSD_SOURCE -D__FAVOR_BSD -DHAVE_NET_ETHERNET_H -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -pthread  -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include 
+INCFLAGS  = -I$(INCLUDE) -I$(DPDKINCLUDE)
 
 #INCFLAGS += -I$(DDINCLUDE)
 #INCFLAGS += -I$(DSPINCLUDE)

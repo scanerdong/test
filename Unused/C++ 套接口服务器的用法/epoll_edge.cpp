@@ -178,17 +178,12 @@ int main(int argc, char* argv[])
             } else {
                 //连接型套接口
                 int done = 0;
+				ssize_t total = 0;
+				char buf[512];
+				ssize_t count;
                 while(1)
                 {
-                    /* We have data on the fd waiting to be read. Read and
-                        display it. We must read whatever data is available
-                        completely, as we are running in edge-triggered mode
-                        and won't get a notification again for the same
-                        data. */
-                     ssize_t count;
-                     char buf[512];
-                    
-                     count = read (events[n].data.fd, buf, sizeof(buf));
+                     count = read (events[n].data.fd, buf+total, sizeof(buf)-total);
                      if(count == -1)
                      {
                          /* If errno == EAGAIN, that means we have read all
@@ -201,6 +196,8 @@ int main(int argc, char* argv[])
                          else
                          {
                             perror("read EAGAIN");//证明数据已经读完
+                            //输出数据
+                            write (1, buf, total);
                          }
                          break;
                      }else if (count == 0) // 0,peer closed
@@ -212,12 +209,15 @@ int main(int argc, char* argv[])
                          break;
                      }else{
                        /* Write the buffer to standard output */
+					   /*
                        int s = write (1, buf, count);
                        if (s == -1)
                          {
                            perror ("write");
                            abort ();
                          }
+                         */
+                       total += count;
                      }
                 }
 

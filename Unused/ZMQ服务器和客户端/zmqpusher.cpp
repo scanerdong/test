@@ -1,4 +1,4 @@
-#include <zmq.h> 
+#include <zmq.h>
 #include <string.h> 
 #include <stdio.h> 
 #include <unistd.h>  
@@ -76,18 +76,22 @@ int main(int argc, char *argv[])
 
 	std::string url = "tcp://"+ip+":"+port;
 	std::cout << url << std::endl;
-	void* context = zmq_init(2); //  Socket to talk to server	  
+	void* context = zmq_init(1); //  Socket to talk to server	  
+	void* context2 = zmq_init(2); //  Socket to talk to server	  
 	printf("prepare push messages\n");
 	
 	void* pusher = zmq_socket(context, ZMQ_PUSH);
+	void* pusher2 = zmq_socket(context2, ZMQ_PUSH);
+	void* pusher22 = zmq_socket(context2, ZMQ_PUSH);
 
 	//set socket option
-	int optValue = 1000000;
+	int optValue = 10;
 	zmq_setsockopt(pusher, ZMQ_SNDHWM, &optValue, sizeof(int));
 
-	//zmq_connect(pusher, url.c_str());//"tcp://172.16.36.31:7000"
+	zmq_connect(pusher, url.c_str());//"tcp://172.16.36.31:7000"
 	
-	zmq_connect(pusher, "ipc:///tmp/hahahaha");//这里创建一个叫/tmp/hahahaha的命名管道来传递信息
+	zmq_connect(pusher2, "ipc:///tmp/hahahaha");//这里创建一个叫/tmp/hahahaha的命名管道来传递信息
+	zmq_connect(pusher22, "ipc:///tmp/hahahaha");//这里创建一个叫/tmp/hahahaha的命名管道来传递信息
 
 	unsigned long long i=1;
 	char pchMsg[PACKET_DATA_SIZE];
@@ -97,14 +101,17 @@ int main(int argc, char *argv[])
 		//char* pchMsg = (char*)malloc(sizeof(char)*PACKET_DATA_SIZE);
 		//memset(pchMsg, i, PACKET_DATA_SIZE);
 		//snprintf(pchMsg, PACKET_DATA_SIZE, "send %lld packets!", i);
-		//zmq_msg_t msg;
+		zmq_msg_t msg;
 		
 		//zmq_msg_init_data(&msg, pchMsg, PACKET_DATA_SIZE, freeMsg, NULL);
-		/*zmq_msg_init_data(&msg, pchMsg, PACKET_DATA_SIZE, freeMsg, NULL);
-		zmq_msg_send(&msg,pusher,0);//ZMQ_DONTWAIT
-		zmq_msg_close(&msg);*/
+		zmq_msg_init_data(&msg, pchMsg, PACKET_DATA_SIZE, freeMsg, NULL);
+		zmq_msg_send(&msg,pusher,ZMQ_DONTWAIT);//ZMQ_DONTWAIT
+		zmq_msg_close(&msg);
 
-		zmq_send(pusher, pchMsg, PACKET_DATA_SIZE, 0);
+		int ret = zmq_send(pusher, pchMsg, PACKET_DATA_SIZE, ZMQ_DONTWAIT); 
+                printf("send ret %d\n",ret);
+		zmq_send(pusher2, pchMsg, PACKET_DATA_SIZE, ZMQ_DONTWAIT);
+		zmq_send(pusher22, pchMsg, PACKET_DATA_SIZE, ZMQ_DONTWAIT);
 		
 		gettimeofday(&stLogTime,NULL);
 		u64CurrLogUsec = stLogTime.tv_sec*1000*1000 + stLogTime.tv_usec;
@@ -116,9 +123,10 @@ int main(int argc, char *argv[])
 			printf("time[%s] send %lld packets\n", getTimeStr(achTime,time(NULL)), i);
 		}
 		i++;
-		//sleep(1);
+		sleep(1);
 	}
 
 	zmq_close(pusher);
+	zmq_close(pusher2);
 	zmq_term(context);
 }
